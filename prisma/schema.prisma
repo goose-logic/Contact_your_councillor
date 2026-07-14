@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CITIZEN
+  COUNCILLOR
+  TEAM_MEMBER
+  ADMIN
+}
+
+enum SubmissionCategory {
+  REPORT_ISSUE
+  REQUEST_SERVICE
+  CASEWORK_SUPPORT
+  POLICY_FEEDBACK
+  GENERAL_ENQUIRY
+  COMPLAINT
+  PRAISE_FEEDBACK
+  MEETING_REQUEST
+}
+
+enum Topic {
+  BINS_WASTE
+  ROADS_HIGHWAYS
+  HOUSING
+  PARKS_ENVIRONMENT
+  PLANNING
+  COMMUNITY_SAFETY
+  COUNCIL_TAX_BENEFITS
+  EDUCATION_YOUTH
+  OTHER
+}
+
+enum SubmissionStatus {
+  NEW
+  TRIAGED
+  FORWARDED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Sensitivity {
+  NORMAL
+  SENSITIVE
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLISHED
+}
+
+model Council {
+  id    String @id @default(cuid())
+  name  String @unique
+  slug  String @unique
+
+  wards Ward[]
+  teams Team[]
+
+  createdAt DateTime @default(now())
+}
+
+model Ward {
+  id        String  @id @default(cuid())
+  name      String
+  councilId String
+  council   Council @relation(fields: [councilId], references: [id], onDelete: Cascade)
+
+  councillors Councillor[]
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([councilId, name])
+}
+
+model Team {
+  id          String  @id @default(cuid())
+  councilId   String
+  council     Council @relation(fields: [councilId], references: [id], onDelete: Cascade)
+  name        String
+  topic       Topic
+  description String?
+
+  members     User[]
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([councilId, topic])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(CITIZEN)
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  councillor Councillor?
+
+  submissions       Submission[]       @relation("CitizenSubmissions")
+  submissionUpdates SubmissionUpdate[]
+
+  createdAt DateTime @default(now())
+}
+
+model Councillor {
+  id       String @id @default(cuid())
+  userId   String @unique
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wardId   String
+  ward     Ward   @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  party    String
+  bio      String
+  photoUrl String?
+
+  posts       Post[]
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id           String     @id @default(cuid())
+  councillorId String
+  councillor   Councillor @relation(fields: [councillorId], references: [id], onDelete: Cascade)
+  title        String
+  body         String
+  createdAt    DateTime   @default(now())
+}
+
+model Submission {
+  id       String @id @default(cuid())
+  citizenId String
+  citizen   User   @relation("CitizenSubmissions", fields: [citizenId], references: [id], onDelete: Cascade)
+
+  wardId       String
+  ward         Ward   @relation(fields: [wardId], references: [id])
+  councillorId String
+  councillor   Councillor @relation(fields: [councillorId], references: [id])
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  category SubmissionCategory
+  topic    Topic
+  subject  String
+  description String
+
+  sensitivity Sensitivity @default(NORMAL)
+  status      SubmissionStatus @default(NEW)
+  visibility  Visibility       @default(PRIVATE)
+
+  publishedSummary String?
+
+  firstRespondedAt DateTime?
+  resolvedAt       DateTime?
+
+  updates SubmissionUpdate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SubmissionUpdate {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  authorId   String
+  author     User   @relation(fields: [authorId], references: [id])
+  authorRole Role
+
+  message        String
+  visibleToCitizen Boolean @default(true)
+
+  createdAt DateTime @default(now())
+}
