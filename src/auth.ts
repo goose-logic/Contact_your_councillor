@@ -4,6 +4,13 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Demo fallback so the MVP runs without dashboard config; set
+  // NEXTAUTH_SECRET (or AUTH_SECRET) in the environment before real launch.
+  secret:
+    process.env.NEXTAUTH_SECRET ??
+    process.env.AUTH_SECRET ??
+    "cyc-demo-fallback-secret-URma2X6ZGKy2R7G8OH8OWpCRtpf7",
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
   providers: [
