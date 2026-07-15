@@ -1,0 +1,29 @@
+import type { Role } from "@/generated/prisma/enums";
+import type { DefaultSession } from "next-auth";
+import "next-auth";
+import "next-auth/jwt";
+
+declare module "next-auth" {
+  interface User {
+    role: Role;
+    teamId: string | null;
+    councillorId: string | null;
+  }
+
+  interface Session {
+    user: {
+      id: string;
+      role: Role;
+      teamId: string | null;
+      councillorId: string | null;
+    } & DefaultSession["user"];
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role: Role;
+    teamId: string | null;
+    councillorId: string | null;
+  }
+}
