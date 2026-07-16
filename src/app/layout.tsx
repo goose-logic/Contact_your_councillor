@@ -32,7 +32,9 @@ export default function RootLayout({
         <Nav />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-400">
-          Demo MVP &mdash; ward and council names are real, councillor profiles are fictional placeholder data.
+          Demo MVP &mdash; councillor listings reflect the May 2026 Hackney election results
+          (public record). This platform is not affiliated with Hackney Council; the casework
+          workflow is demonstrated with clearly-marked fictional accounts.
         </footer>
       </body>
     </html>
