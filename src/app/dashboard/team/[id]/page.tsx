@@ -21,7 +21,7 @@ export default async function TeamSubmissionPage({
     where: { id },
     include: {
       citizen: true,
-      councillor: { include: { user: true } },
+      councillor: true,
       updates: { orderBy: { createdAt: "asc" }, include: { author: true } },
     },
   });
@@ -38,7 +38,7 @@ export default async function TeamSubmissionPage({
           <h1 className="text-2xl font-bold text-slate-900">{submission.subject}</h1>
           <p className="mt-1 text-sm text-slate-500">
             {CATEGORY_LABELS[submission.category]} &middot; {TOPIC_LABELS[submission.topic]} &middot; forwarded by{" "}
-            {submission.councillor.user.name}
+            {submission.councillor.name}
           </p>
         </div>
         <StatusBadge status={submission.status} />

@@ -14,7 +14,6 @@ export default async function CouncillorProfilePage({
   const councillor = await prisma.councillor.findUnique({
     where: { id },
     include: {
-      user: true,
       ward: { include: { council: true } },
       posts: { orderBy: { createdAt: "desc" }, take: 10 },
     },
@@ -22,28 +21,46 @@ export default async function CouncillorProfilePage({
 
   if (!councillor) notFound();
 
+  const isClaimed = councillor.userId !== null;
+
   const stats = await getCouncillorAccountability(councillor.id);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <div className="flex flex-col gap-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-start">
         <div className="flex h-20 w-20 flex-none items-center justify-center rounded-full bg-slate-200 text-2xl font-semibold text-slate-600">
-          {councillor.user.name
+          {councillor.name
             .split(" ")
             .map((n) => n[0])
             .join("")}
         </div>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-slate-900">{councillor.user.name}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{councillor.name}</h1>
           <p className="text-slate-500">
             {councillor.party} &middot; {councillor.ward.name}, {councillor.ward.council.name}
           </p>
-          <p className="mt-3 text-slate-700">{councillor.bio}</p>
+          {councillor.bio && <p className="mt-3 text-slate-700">{councillor.bio}</p>}
+          {!isClaimed && (
+            <p className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-500">
+              This is a public-record listing based on the May 2026 election results. This
+              councillor hasn&apos;t joined the platform yet, so messages sent here won&apos;t
+              reach them &mdash; contact them via{" "}
+              <a
+                className="underline"
+                href="https://hackney.gov.uk/councillors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Hackney Council
+              </a>{" "}
+              for real casework.
+            </p>
+          )}
           <Link
             href={`/contact/${councillor.id}`}
             className="mt-4 inline-block rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
           >
-            Contact {councillor.user.name.split(" ")[0]}
+            Contact {councillor.name.split(" ")[0]}
           </Link>
         </div>
       </div>

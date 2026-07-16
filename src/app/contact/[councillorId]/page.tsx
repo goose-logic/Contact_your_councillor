@@ -13,7 +13,7 @@ export default async function ContactCouncillorPage({
 
   const councillor = await prisma.councillor.findUnique({
     where: { id: councillorId },
-    include: { user: true, ward: true },
+    include: { ward: true },
   });
   if (!councillor) notFound();
 
@@ -23,7 +23,7 @@ export default async function ContactCouncillorPage({
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center">
         <h1 className="text-2xl font-bold text-slate-900">
-          Log in to contact {councillor.user.name}
+          Log in to contact {councillor.name}
         </h1>
         <p className="mt-2 text-slate-600">
           Create a free resident account so you can track updates on your submission.
@@ -56,7 +56,7 @@ export default async function ContactCouncillorPage({
 
   return (
     <div className="mx-auto max-w-xl px-4 py-12">
-      <h1 className="text-2xl font-bold text-slate-900">Contact {councillor.user.name}</h1>
+      <h1 className="text-2xl font-bold text-slate-900">Contact {councillor.name}</h1>
       <p className="mt-1 text-sm text-slate-600">
         Tell us what this is about and we&apos;ll get it to the right place.
       </p>

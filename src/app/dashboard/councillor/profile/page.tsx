@@ -27,7 +27,7 @@ export default async function CouncillorProfileEditPage() {
           id="bio"
           name="bio"
           rows={4}
-          defaultValue={councillor.bio}
+          defaultValue={councillor.bio ?? ""}
           className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
         />
         <button

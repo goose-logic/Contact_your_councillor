@@ -18,7 +18,7 @@ export default async function CitizenSubmissionPage({
   const submission = await prisma.submission.findUnique({
     where: { id },
     include: {
-      councillor: { include: { user: true } },
+      councillor: true,
       team: true,
       updates: {
         where: { visibleToCitizen: true },
@@ -39,7 +39,7 @@ export default async function CitizenSubmissionPage({
           <h1 className="text-2xl font-bold text-slate-900">{submission.subject}</h1>
           <p className="mt-1 text-sm text-slate-500">
             {CATEGORY_LABELS[submission.category]} &middot; {TOPIC_LABELS[submission.topic]} &middot; to{" "}
-            {submission.councillor.user.name}
+            {submission.councillor.name}
             {submission.team && <> &middot; with {submission.team.name}</>}
           </p>
         </div>

@@ -11,7 +11,7 @@ export default async function CitizenDashboard() {
 
   const submissions = await prisma.submission.findMany({
     where: { citizenId: session.user.id },
-    include: { councillor: { include: { user: true } } },
+    include: { councillor: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -38,7 +38,7 @@ export default async function CitizenDashboard() {
                 <div>
                   <p className="font-medium text-slate-900">{s.subject}</p>
                   <p className="text-sm text-slate-500">
-                    {CATEGORY_LABELS[s.category]} &middot; to {s.councillor.user.name}
+                    {CATEGORY_LABELS[s.category]} &middot; to {s.councillor.name}
                   </p>
                 </div>
                 <StatusBadge status={s.status} />

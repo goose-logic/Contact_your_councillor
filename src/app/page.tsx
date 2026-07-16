@@ -1,6 +1,13 @@
+import Link from "next/link";
 import { PostcodeLookupForm } from "@/components/postcode-lookup-form";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  const demoWard = await prisma.ward.findFirst({
+    where: { name: { startsWith: "Demo Ward" } },
+    select: { id: true },
+  });
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <h1 className="text-4xl font-bold tracking-tight text-slate-900">
@@ -14,6 +21,16 @@ export default function Home() {
       <div className="mt-8 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <PostcodeLookupForm />
       </div>
+
+      {demoWard && (
+        <p className="mt-4 text-sm text-slate-500">
+          Want to see the full casework workflow without contacting a real councillor?{" "}
+          <Link href={`/wards/${demoWard.id}`} className="font-medium text-slate-900 underline">
+            Try the fictional demo ward
+          </Link>
+          .
+        </p>
+      )}
 
       <div className="mt-12 grid gap-6 sm:grid-cols-3">
         <Feature

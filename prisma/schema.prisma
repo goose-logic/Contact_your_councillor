@@ -116,14 +116,16 @@ model User {
 }
 
 model Councillor {
-  id       String @id @default(cuid())
-  userId   String @unique
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String  @id @default(cuid())
+  userId   String? @unique
+  user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   wardId   String
-  ward     Ward   @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  ward     Ward    @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  name     String  @default("")
   party    String
-  bio      String
+  bio      String?
   photoUrl String?
+  isDemo   Boolean @default(false)
 
   posts       Post[]
   submissions Submission[]

@@ -15,7 +15,7 @@ export default async function TeamInbox() {
     prisma.team.findUnique({ where: { id: session.user.teamId } }),
     prisma.submission.findMany({
       where: { teamId: session.user.teamId },
-      include: { citizen: true, councillor: { include: { user: true } } },
+      include: { citizen: true, councillor: true },
       orderBy: { createdAt: "desc" },
     }),
   ]);
@@ -39,7 +39,7 @@ export default async function TeamInbox() {
                   <p className="font-medium text-slate-900">{s.subject}</p>
                   <p className="text-sm text-slate-500">
                     {CATEGORY_LABELS[s.category]} &middot; {TOPIC_LABELS[s.topic]} &middot; via{" "}
-                    {s.councillor.user.name}
+                    {s.councillor.name}
                   </p>
                 </div>
                 <StatusBadge status={s.status} />
