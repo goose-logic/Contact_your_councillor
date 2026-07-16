@@ -14,8 +14,8 @@ export default async function Home() {
         Contact your councillor
       </h1>
       <p className="mt-4 text-lg text-slate-600">
-        Enter your postcode to find the councillors for your London borough &mdash; every one of
-        the 32 boroughs and the City of London, with their party, role and official contact.
+        Enter your postcode to find the councillors who represent you &mdash; every council across
+        the UK, including both your local and county councillors where you have them.
       </p>
 
       <div className="mt-8 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">

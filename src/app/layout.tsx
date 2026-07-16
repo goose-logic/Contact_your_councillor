@@ -32,9 +32,9 @@ export default function RootLayout({
         <Nav />
         <main className="flex-1">{children}</main>
         <footer className="border-t border-slate-200 py-6 text-center text-xs text-slate-400">
-          Demo MVP &mdash; councillor listings are public-record data for the 32 London boroughs
-          and the City of London. Not affiliated with any council; the casework workflow is
-          demonstrated with clearly-marked fictional accounts.
+          Demo MVP &mdash; councillor listings are public-record data covering UK councils. Not
+          affiliated with any council; the casework workflow is demonstrated with clearly-marked
+          fictional accounts.
         </footer>
       </body>
     </html>

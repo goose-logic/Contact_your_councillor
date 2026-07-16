@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { boroughKey, boroughSlug } from "../src/lib/borough";
+import { councilKey, councilSlug, wardKey } from "../src/lib/borough";
 import bcrypt from "bcryptjs";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -11,12 +11,13 @@ const prisma = new PrismaClient({ adapter });
 
 const DEMO_PASSWORD = "password123";
 const DEMO_SLUG = "demo-borough";
+const EXPECTED_MIN_COUNCILLORS = 18000;
 
-type RawCouncillor = {
+type Raw = {
+  council: string;
+  ward: string | null;
   name: string;
-  borough: string;
   party: string | null;
-  role: string | null;
   email: string | null;
 };
 
@@ -43,41 +44,58 @@ async function wipe() {
   await prisma.council.deleteMany();
 }
 
-async function seedRealCouncillors() {
-  const data: RawCouncillor[] = JSON.parse(
-    readFileSync(join(__dirname, "londonCouncillors.json"), "utf-8")
-  );
+async function seedReal() {
+  const data: Raw[] = JSON.parse(readFileSync(join(__dirname, "ukCouncillors.json"), "utf-8"));
 
-  const byBorough = new Map<string, RawCouncillor[]>();
+  // Group councillors by council, then by ward.
+  const byCouncil = new Map<string, Raw[]>();
   for (const c of data) {
-    const list = byBorough.get(c.borough) ?? [];
+    const list = byCouncil.get(c.council) ?? [];
     list.push(c);
-    byBorough.set(c.borough, list);
+    byCouncil.set(c.council, list);
   }
 
-  for (const [borough, councillors] of byBorough) {
+  const usedSlugs = new Set<string>();
+  let wardCount = 0;
+
+  for (const [councilName, councillors] of byCouncil) {
+    let slug = councilSlug(councilName);
+    while (usedSlugs.has(slug)) slug = `${slug}-x`;
+    usedSlugs.add(slug);
+
     const council = await prisma.council.create({
-      data: { name: borough, slug: boroughSlug(borough), matchKey: boroughKey(borough) },
+      data: { name: councilName, slug, matchKey: councilKey(councilName) },
     });
+
+    // Create the distinct wards for this council.
+    const wardNames = [...new Set(councillors.map((c) => c.ward).filter((w): w is string => !!w))];
+    if (wardNames.length) {
+      await prisma.ward.createMany({
+        data: wardNames.map((name) => ({ councilId: council.id, name, matchKey: wardKey(name) })),
+      });
+      wardCount += wardNames.length;
+    }
+    const wards = await prisma.ward.findMany({
+      where: { councilId: council.id },
+      select: { id: true, name: true },
+    });
+    const wardId = new Map(wards.map((w) => [w.name, w.id]));
 
     await prisma.councillor.createMany({
       data: councillors.map((c) => ({
         councilId: council.id,
+        wardId: c.ward ? wardId.get(c.ward) ?? null : null,
         name: c.name,
         party: c.party,
-        role: c.role,
         email: c.email,
       })),
     });
   }
 
-  return { boroughs: byBorough.size, councillors: data.length };
+  return { councils: byCouncil.size, councillors: data.length, wards: wardCount };
 }
 
 async function seedDemo(passwordHash: string) {
-  // A fully fictional borough so the casework workflow can be demonstrated
-  // end-to-end without impersonating a real councillor. Not reachable by
-  // postcode lookup - only via the "try the demo" link on the homepage.
   const demoCouncil = await prisma.council.create({
     data: { name: "Demo Borough (fictional)", slug: DEMO_SLUG, matchKey: "__demo__", isDemo: true },
   });
@@ -94,7 +112,7 @@ async function seedDemo(passwordHash: string) {
   }
 
   const demoWard = await prisma.ward.create({
-    data: { name: "Demo Ward (fictional)", councilId: demoCouncil.id },
+    data: { name: "Demo Ward (fictional)", matchKey: "__demo_ward__", councilId: demoCouncil.id },
   });
 
   const demoCouncillorUser = await prisma.user.create({
@@ -178,23 +196,21 @@ async function main() {
   const councillorCount = await prisma.councillor.count();
   const demoCouncil = await prisma.council.findUnique({ where: { slug: DEMO_SLUG } });
 
-  // Reseed only when the data is missing or clearly out of date.
-  if (demoCouncil && councillorCount > 1900) {
+  if (demoCouncil && councillorCount > EXPECTED_MIN_COUNCILLORS) {
     console.log("Seed data already current, skipping.");
     return;
   }
 
-  console.log("Seeding London councillor data...");
+  console.log("Seeding UK councillor data (this loads ~19k councillors)...");
   await wipe();
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
-  const { boroughs, councillors } = await seedRealCouncillors();
+  const { councils, councillors, wards } = await seedReal();
   await seedDemo(passwordHash);
 
-  console.log(`Seed complete: ${councillors} real councillors across ${boroughs} boroughs, plus a demo borough.`);
+  console.log(`Seed complete: ${councillors} councillors, ${wards} wards, ${councils} councils, plus a demo borough.`);
   console.log(`Demo login password for all demo accounts: ${DEMO_PASSWORD}`);
-  console.log("Resident: resident@demo.example");
-  console.log("Demo councillor: demo.councillor@demo.example");
+  console.log("Resident: resident@demo.example | Demo councillor: demo.councillor@demo.example");
 }
 
 type TeamTopic =

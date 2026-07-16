@@ -74,6 +74,7 @@ model Council {
 model Ward {
   id        String  @id @default(cuid())
   name      String
+  matchKey  String  @default("")
   councilId String
   council   Council @relation(fields: [councilId], references: [id], onDelete: Cascade)
 
@@ -83,6 +84,7 @@ model Ward {
   createdAt DateTime @default(now())
 
   @@unique([councilId, name])
+  @@index([councilId, matchKey])
 }
 
 model Team {

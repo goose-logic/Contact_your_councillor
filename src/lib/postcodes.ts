@@ -1,5 +1,12 @@
 export type PostcodeLookupResult =
-  | { ok: true; postcode: string; ward: string; district: string }
+  | {
+      ok: true;
+      postcode: string;
+      district: string; // admin_district (borough / district / unitary)
+      county: string | null; // admin_county (upper tier, two-tier areas only)
+      ward: string | null; // admin_ward (district ward)
+      division: string | null; // ced (county electoral division, two-tier areas)
+    }
   | { ok: false; error: string };
 
 export async function lookupPostcode(rawPostcode: string): Promise<PostcodeLookupResult> {
@@ -20,14 +27,16 @@ export async function lookupPostcode(rawPostcode: string): Promise<PostcodeLooku
 
   const data = await res.json();
   const result = data?.result;
-  if (!result?.admin_ward || !result?.admin_district) {
-    return { ok: false, error: "Couldn't determine a ward for that postcode." };
+  if (!result?.admin_district) {
+    return { ok: false, error: "Couldn't determine a council for that postcode." };
   }
 
   return {
     ok: true,
     postcode: result.postcode,
-    ward: result.admin_ward,
     district: result.admin_district,
+    county: result.admin_county || null,
+    ward: result.admin_ward || null,
+    division: result.ced || null,
   };
 }

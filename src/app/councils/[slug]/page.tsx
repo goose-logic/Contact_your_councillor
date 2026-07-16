@@ -5,13 +5,10 @@ import { initials } from "@/lib/initials";
 
 export default async function CouncilPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ ward?: string }>;
 }) {
   const { slug } = await params;
-  const { ward } = await searchParams;
 
   const council = await prisma.council.findUnique({
     where: { slug },
@@ -34,16 +31,8 @@ export default async function CouncilPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <p className="text-sm text-slate-500">Your council</p>
+      <p className="text-sm text-slate-500">Council</p>
       <h1 className="text-3xl font-bold text-slate-900">{council.name}</h1>
-
-      {ward && (
-        <p className="mt-2 text-sm text-slate-600">
-          Your ward is <span className="font-medium text-slate-900">{ward}</span>. We&apos;re
-          showing every councillor for {council.name}; ward-level filtering (your 2&ndash;3 local
-          councillors) is coming soon.
-        </p>
-      )}
 
       <p className="mt-6 text-sm text-slate-500">
         {council.councillors.length} councillors
