@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { initials } from "@/lib/initials";
 import { getCouncillorAccountability } from "@/lib/metrics";
 import { TOPIC_LABELS } from "@/lib/labels";
 
@@ -29,10 +30,7 @@ export default async function CouncillorProfilePage({
     <div className="mx-auto max-w-3xl px-4 py-12">
       <div className="flex flex-col gap-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-start">
         <div className="flex h-20 w-20 flex-none items-center justify-center rounded-full bg-slate-200 text-2xl font-semibold text-slate-600">
-          {councillor.name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")}
+          {initials(councillor.name)}
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900">{councillor.name}</h1>

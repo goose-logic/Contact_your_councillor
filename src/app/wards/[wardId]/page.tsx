@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { initials } from "@/lib/initials";
 import { getCouncillorAccountability } from "@/lib/metrics";
 
 export default async function WardPage({
@@ -46,10 +47,7 @@ export default async function WardPage({
               className="flex items-center gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm hover:border-slate-400"
             >
               <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-slate-200 text-lg font-semibold text-slate-600">
-                {councillor.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
+                {initials(councillor.name)}
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-slate-900">{councillor.name}</p>
