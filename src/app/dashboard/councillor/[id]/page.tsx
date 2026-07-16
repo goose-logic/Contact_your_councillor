@@ -28,17 +28,19 @@ export default async function CouncillorSubmissionPage({
     include: {
       citizen: true,
       team: true,
-      councillor: { include: { ward: true } },
+      councillor: true,
       updates: { orderBy: { createdAt: "asc" }, include: { author: true } },
     },
   });
 
   if (!submission || submission.councillorId !== session.user.councillorId) notFound();
 
-  const teams = await prisma.team.findMany({
-    where: { councilId: submission.councillor.ward.councilId },
-    orderBy: { name: "asc" },
-  });
+  const teams = submission.councillor.councilId
+    ? await prisma.team.findMany({
+        where: { councilId: submission.councillor.councilId },
+        orderBy: { name: "asc" },
+      })
+    : [];
 
   const addUpdate = addSubmissionUpdate.bind(null, submission.id);
   const forward = forwardToTeam.bind(null, submission.id);

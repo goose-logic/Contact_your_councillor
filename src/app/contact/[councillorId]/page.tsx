@@ -17,6 +17,32 @@ export default async function ContactCouncillorPage({
   });
   if (!councillor) notFound();
 
+  // Only councillors who have joined the platform can receive in-platform
+  // messages. Public-record listings point residents to the official email.
+  if (councillor.userId === null) {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center">
+        <h1 className="text-2xl font-bold text-slate-900">{councillor.name}</h1>
+        <p className="mt-2 text-slate-600">
+          This councillor hasn&apos;t joined the platform yet, so you can&apos;t message them here.
+          {councillor.email && (
+            <>
+              {" "}
+              Contact them directly at{" "}
+              <a className="font-medium text-slate-900 underline" href={`mailto:${councillor.email}`}>
+                {councillor.email}
+              </a>
+              .
+            </>
+          )}
+        </p>
+        <Link href={`/councillors/${councillor.id}`} className="mt-6 inline-block text-sm font-medium text-slate-900 underline">
+          Back to profile
+        </Link>
+      </div>
+    );
+  }
+
   const session = await auth();
 
   if (!session) {
@@ -61,7 +87,7 @@ export default async function ContactCouncillorPage({
         Tell us what this is about and we&apos;ll get it to the right place.
       </p>
       <div className="mt-6 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <ContactForm councillorId={councillor.id} wardId={councillor.wardId} />
+        <ContactForm councillorId={councillor.id} wardId={councillor.wardId ?? ""} />
       </div>
     </div>
   );

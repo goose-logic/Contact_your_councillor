@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { lookupPostcode } from "@/lib/postcodes";
+import { boroughKey } from "@/lib/borough";
 
 export type LookupState = { message?: string } | undefined;
 
@@ -14,16 +15,15 @@ export async function lookupAddress(_prevState: LookupState, formData: FormData)
     return { message: result.error };
   }
 
-  const ward = await prisma.ward.findFirst({
-    where: { name: { equals: result.ward, mode: "insensitive" } },
-    include: { council: true },
+  const council = await prisma.council.findFirst({
+    where: { matchKey: boroughKey(result.district) },
   });
 
-  if (!ward) {
+  if (!council) {
     return {
-      message: `We don't have demo data for ${result.ward} (${result.district}) yet. This MVP currently only covers our pilot borough.`,
+      message: `We found your area (${result.district}) but don't have its councillors loaded yet. This pilot currently covers the 32 London boroughs and the City of London.`,
     };
   }
 
-  redirect(`/wards/${ward.id}`);
+  redirect(`/councils/${council.slug}?ward=${encodeURIComponent(result.ward)}`);
 }

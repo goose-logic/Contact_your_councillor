@@ -15,6 +15,7 @@ export default async function CouncillorProfilePage({
   const councillor = await prisma.councillor.findUnique({
     where: { id },
     include: {
+      council: true,
       ward: { include: { council: true } },
       posts: { orderBy: { createdAt: "desc" }, take: 10 },
     },
@@ -23,6 +24,8 @@ export default async function CouncillorProfilePage({
   if (!councillor) notFound();
 
   const isClaimed = councillor.userId !== null;
+  const councilName = councillor.ward?.council.name ?? councillor.council?.name;
+  const location = [councillor.ward?.name, councilName].filter(Boolean).join(", ");
 
   const stats = await getCouncillorAccountability(councillor.id);
 
@@ -35,31 +38,36 @@ export default async function CouncillorProfilePage({
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-900">{councillor.name}</h1>
           <p className="text-slate-500">
-            {councillor.party} &middot; {councillor.ward.name}, {councillor.ward.council.name}
+            {[councillor.party, location].filter(Boolean).join(" · ")}
           </p>
+          {councillor.role && councillor.role !== "Councillor" && (
+            <p className="mt-1 text-sm font-medium text-slate-600">{councillor.role}</p>
+          )}
           {councillor.bio && <p className="mt-3 text-slate-700">{councillor.bio}</p>}
           {!isClaimed && (
-            <p className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-500">
-              This is a public-record listing based on the May 2026 election results. This
-              councillor hasn&apos;t joined the platform yet, so messages sent here won&apos;t
-              reach them &mdash; contact them via{" "}
-              <a
-                className="underline"
-                href="https://hackney.gov.uk/councillors"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Hackney Council
-              </a>{" "}
-              for real casework.
-            </p>
+            <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-500">
+              <p>
+                This is a public-record listing. This councillor hasn&apos;t joined the platform
+                yet, so messages sent here won&apos;t reach them.
+              </p>
+              {councillor.email && (
+                <p className="mt-2">
+                  Official contact:{" "}
+                  <a className="font-medium text-slate-700 underline" href={`mailto:${councillor.email}`}>
+                    {councillor.email}
+                  </a>
+                </p>
+              )}
+            </div>
           )}
-          <Link
-            href={`/contact/${councillor.id}`}
-            className="mt-4 inline-block rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
-          >
-            Contact {councillor.name.split(" ")[0]}
-          </Link>
+          {isClaimed && (
+            <Link
+              href={`/contact/${councillor.id}`}
+              className="mt-4 inline-block rounded-md bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700"
+            >
+              Contact {councillor.name.split(" ")[0]}
+            </Link>
+          )}
         </div>
       </div>
 

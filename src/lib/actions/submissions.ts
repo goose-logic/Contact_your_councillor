@@ -8,7 +8,7 @@ import { auth } from "@/auth";
 
 const CreateSubmissionSchema = z.object({
   councillorId: z.string().min(1),
-  wardId: z.string().min(1),
+  wardId: z.string().optional(),
   category: z.enum([
     "REPORT_ISSUE",
     "REQUEST_SERVICE",
@@ -66,7 +66,7 @@ export async function createSubmission(
     data: {
       citizenId: session.user.id,
       councillorId,
-      wardId,
+      wardId: wardId || null,
       category,
       topic,
       subject,

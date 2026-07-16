@@ -60,9 +60,13 @@ model Council {
   id    String @id @default(cuid())
   name  String @unique
   slug  String @unique
+  // Normalized borough name used to match postcodes.io admin_district.
+  matchKey String @default("")
+  isDemo   Boolean @default(false)
 
-  wards Ward[]
-  teams Team[]
+  wards       Ward[]
+  teams       Team[]
+  councillors Councillor[]
 
   createdAt DateTime @default(now())
 }
@@ -116,16 +120,20 @@ model User {
 }
 
 model Councillor {
-  id       String  @id @default(cuid())
-  userId   String? @unique
-  user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  wardId   String
-  ward     Ward    @relation(fields: [wardId], references: [id], onDelete: Cascade)
-  name     String  @default("")
-  party    String
-  bio      String?
-  photoUrl String?
-  isDemo   Boolean @default(false)
+  id        String   @id @default(cuid())
+  userId    String?  @unique
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  councilId String?
+  council   Council? @relation(fields: [councilId], references: [id], onDelete: Cascade)
+  wardId    String?
+  ward      Ward?    @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  name      String   @default("")
+  party     String?
+  role      String?
+  email     String?
+  bio       String?
+  photoUrl  String?
+  isDemo    Boolean  @default(false)
 
   posts       Post[]
   submissions Submission[]
@@ -147,8 +155,8 @@ model Submission {
   citizenId String
   citizen   User   @relation("CitizenSubmissions", fields: [citizenId], references: [id], onDelete: Cascade)
 
-  wardId       String
-  ward         Ward   @relation(fields: [wardId], references: [id])
+  wardId       String?
+  ward         Ward?  @relation(fields: [wardId], references: [id])
   councillorId String
   councillor   Councillor @relation(fields: [councillorId], references: [id])
 
