@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 :root {
+  /* The app is designed for a single light theme. Pin the colour scheme so the
+     page and native controls don't follow the OS into dark mode (which left a
+     black background under dark text and made the site unreadable). */
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -12,15 +16,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
